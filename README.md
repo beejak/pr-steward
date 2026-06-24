@@ -66,3 +66,4 @@ Closing a stale Dependabot PR only removes it from the open-PR queue — it does
 - [AGENTS.md](AGENTS.md) — canonical agent instructions
 - [docs/adr/0001-pr-lifecycle-architecture.md](docs/adr/0001-pr-lifecycle-architecture.md)
 - [docs/phase3-agent-triage.md](docs/phase3-agent-triage.md)
+- [docs/agentwatch-fixture.md](docs/agentwatch-fixture.md) — sandbox repo for live PR lifecycle tests

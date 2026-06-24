@@ -2,7 +2,7 @@ import type { PolicyConfig, PullRequest, RuleDecision } from "../types.js";
 import { evaluatePullRequest, shouldApplyAction } from "../engine/evaluate.js";
 import { buildEvaluationContext } from "../engine/context.js";
 import type { PlatformClient } from "../platform/client.js";
-import { triagePullRequest } from "../agent/triage.js";
+import { triagePullRequest, type TriageProvider } from "../agent/triage.js";
 import { mergeAgentVerdict, needsAgentTriage } from "../agent/gate.js";
 import type { AgentVerdict } from "../agent/types.js";
 
@@ -25,6 +25,10 @@ export interface RunSummary {
 
 export interface LifecycleRunnerOptions {
   cursorApiKey?: string;
+  deepseekApiKey?: string;
+  triageProvider?: TriageProvider;
+  deepseekBaseUrl?: string;
+  deepseekModel?: string;
   repository?: string;
 }
 
@@ -72,7 +76,11 @@ export class LifecycleRunner {
         agentVerdict = await triagePullRequest(
           { pr, context },
           {
-            apiKey: this.options.cursorApiKey,
+            cursorApiKey: this.options.cursorApiKey,
+            deepseekApiKey: this.options.deepseekApiKey,
+            provider: this.options.triageProvider,
+            deepseekBaseUrl: this.options.deepseekBaseUrl,
+            deepseekModel: this.options.deepseekModel,
             repo: this.options.repository,
           },
         );

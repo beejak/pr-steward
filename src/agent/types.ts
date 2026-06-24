@@ -11,7 +11,7 @@ export interface AgentVerdict {
   confidence: number;
   ruleId: string;
   comment: string;
-  source: "cursor" | "heuristic";
+  source: "deepseek" | "cursor" | "heuristic";
 }
 
 export const AGENT_CONFIDENCE_THRESHOLD = 0.9;

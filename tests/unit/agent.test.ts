@@ -1,6 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi, afterEach } from "vitest";
 import { mergeAgentVerdict, needsAgentTriage } from "../../src/agent/gate.js";
 import { triageWithHeuristic } from "../../src/agent/heuristic.js";
+import { triagePullRequest } from "../../src/agent/triage.js";
 import { buildEvaluationContext } from "../../src/engine/context.js";
 import { evaluatePullRequest } from "../../src/engine/evaluate.js";
 import { LifecycleRunner } from "../../src/runner/lifecycle.js";
@@ -63,6 +64,57 @@ describe("heuristic triage", () => {
     const verdict = triageWithHeuristic({ pr, context });
     expect(verdict.verdict).toBe("close");
     expect(verdict.confidence).toBeGreaterThanOrEqual(0.9);
+  });
+});
+
+describe("deepseek triage", () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it("parses DeepSeek chat completion JSON", async () => {
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => ({
+          choices: [
+            {
+              message: {
+                content: JSON.stringify({
+                  verdict: "warn",
+                  confidence: 0.85,
+                  comment: "Partial overlap with merged work.",
+                }),
+              },
+            },
+          ],
+        }),
+      }),
+    );
+
+    const pr = humanPr({
+      number: 12,
+      createdAt: new Date("2026-01-01"),
+      changedFiles: ["src/a.ts"],
+    });
+    const context = buildEvaluationContext(
+      [pr],
+      [{ number: 3, mergedAt: new Date("2026-02-01"), files: ["src/a.ts"] }],
+    );
+
+    const verdict = await triagePullRequest(
+      { pr, context },
+      {
+        provider: "deepseek",
+        deepseekApiKey: "test-key",
+        repo: "beejak/agentwatch",
+      },
+    );
+
+    expect(verdict.source).toBe("deepseek");
+    expect(verdict.verdict).toBe("warn");
+    expect(verdict.confidence).toBe(0.85);
   });
 });
 

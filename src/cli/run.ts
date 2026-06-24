@@ -6,12 +6,21 @@ import { LifecycleRunner } from "../runner/lifecycle.js";
 import { GitHubClient } from "../platform/github/client.js";
 
 function parseRepo(): { owner: string; repo: string } {
-  const env = process.env.GITHUB_REPOSITORY;
+  const env =
+    process.env.PR_STEWARD_TARGET_REPO ?? process.env.GITHUB_REPOSITORY;
   if (env?.includes("/")) {
     const [owner, repo] = env.split("/");
     return { owner, repo };
   }
   return { owner: "beejak", repo: "pr-steward" };
+}
+
+function parseTriageProvider(): "auto" | "deepseek" | "cursor" | "heuristic" | undefined {
+  const raw = process.env.PR_STEWARD_TRIAGE_PROVIDER;
+  if (raw === "auto" || raw === "deepseek" || raw === "cursor" || raw === "heuristic") {
+    return raw;
+  }
+  return undefined;
 }
 
 function writeReport(summary: Awaited<ReturnType<LifecycleRunner["run"]>>): string {
@@ -45,10 +54,15 @@ async function main(): Promise<void> {
 
   const policy = loadPolicy();
   const { owner, repo } = parseRepo();
+  const repository = process.env.PR_STEWARD_TARGET_REPO ?? process.env.GITHUB_REPOSITORY ?? `${owner}/${repo}`;
   const client = new GitHubClient({ owner, repo, token });
   const runner = new LifecycleRunner(client, policy, {
     cursorApiKey: process.env.CURSOR_API_KEY,
-    repository: process.env.GITHUB_REPOSITORY ?? `${owner}/${repo}`,
+    deepseekApiKey: process.env.DEEPSEEK_API_KEY,
+    triageProvider: parseTriageProvider(),
+    deepseekBaseUrl: process.env.DEEPSEEK_BASE_URL,
+    deepseekModel: process.env.DEEPSEEK_MODEL,
+    repository,
   });
 
   const summary = await runner.run();
@@ -64,6 +78,8 @@ async function main(): Promise<void> {
   const summaryLines = [
     `### pr-steward run (mode: ${summary.mode})`,
     "",
+    `- Repository: ${repository}`,
+    `- Triage provider: ${process.env.PR_STEWARD_TRIAGE_PROVIDER ?? "auto"}`,
     `- Evaluated: ${summary.evaluated}`,
     `- Agent triaged: ${summary.agentTriaged}`,
     `- Would close/warn: ${actionable.length}`,

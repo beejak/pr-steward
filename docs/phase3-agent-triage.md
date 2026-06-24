@@ -13,18 +13,29 @@ Cursor SDK + heuristic fallback for `agent_review` queue (rule C6 — ambiguous 
 
 | Source | When |
 |--------|------|
+| `deepseek` | `DEEPSEEK_API_KEY` set (OpenAI-compatible chat API, JSON mode) |
 | `cursor` | `CURSOR_API_KEY` set and SDK returns valid JSON |
 | `heuristic` | Fallback — file overlap ratio on merged PRs |
+
+`auto` (default) tries DeepSeek, then Cursor, then heuristic.
 
 ## Configuration
 
 ```bash
-# CI / local apply (optional — heuristic works without it)
-CURSOR_API_KEY=...
+DEEPSEEK_API_KEY=...
+# DEEPSEEK_BASE_URL=https://api.deepseek.com
+# DEEPSEEK_MODEL=deepseek-chat
+# PR_STEWARD_TRIAGE_PROVIDER=auto
+
+CURSOR_API_KEY=...   # optional
 GITHUB_REPOSITORY=owner/repo
 ```
 
-Add `CURSOR_API_KEY` as a GitHub Actions repository secret to enable cloud agent triage in the scheduled workflow.
+Add `DEEPSEEK_API_KEY` (and optionally `CURSOR_API_KEY`) as GitHub Actions repository secrets.
+
+## Fixture repo testing
+
+See [agentwatch-fixture.md](agentwatch-fixture.md) for running pr-steward against `beejak/agentwatch` via workflow dispatch.
 
 ## Not in scope
 

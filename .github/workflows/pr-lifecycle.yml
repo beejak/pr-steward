@@ -4,6 +4,22 @@ on:
   schedule:
     - cron: "0 9 * * 1-5"
   workflow_dispatch:
+    inputs:
+      target_repo:
+        description: Repository to evaluate (owner/repo)
+        required: false
+        default: beejak/pr-steward
+        type: string
+      triage_provider:
+        description: Agent triage provider (auto prefers DeepSeek, then Cursor, then heuristic)
+        required: false
+        default: auto
+        type: choice
+        options:
+          - auto
+          - deepseek
+          - cursor
+          - heuristic
 
 permissions:
   contents: read
@@ -25,13 +41,17 @@ jobs:
       - run: npm ci
       - name: Run lifecycle (policy rollout mode)
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.event.inputs.target_repo || github.repository }}
+          PR_STEWARD_TARGET_REPO: ${{ github.event.inputs.target_repo || github.repository }}
+          GITHUB_TOKEN: ${{ (github.event.inputs.target_repo == 'beejak/agentwatch' && secrets.AGENTWATCH_TOKEN) || secrets.GITHUB_TOKEN }}
+          PR_STEWARD_TRIAGE_PROVIDER: ${{ github.event.inputs.triage_provider || 'auto' }}
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
           CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: npm run pr-lifecycle:run
       - name: Upload report
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: pr-lifecycle-report
+          name: pr-lifecycle-report-${{ github.event.inputs.target_repo || github.repository }}
           path: pr-lifecycle-report.json
           if-no-files-found: warn
