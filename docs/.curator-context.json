@@ -1,0 +1,202 @@
+{
+  "generatedAt": "2026-06-24T06:21:53.669Z",
+  "repo": {
+    "name": "pr-steward",
+    "version": "0.1.0",
+    "description": "Hybrid multi-platform PR lifecycle automation (close, warn, security signals)",
+    "nodeEngine": ">=20"
+  },
+  "techStack": [
+    "TypeScript (Node.js ≥20, ESM)",
+    "Vitest",
+    "YAML policy (`policy/pr-lifecycle.yml`)",
+    "GitHub Actions + GitLab CI scaffold",
+    "Gitleaks + Semgrep + CodeQL (tiered security)",
+    "DeepSeek API (agent triage, optional)",
+    "Cursor SDK (agent triage, optional)"
+  ],
+  "policy": {
+    "version": 1,
+    "rolloutMode": "bot-only",
+    "ruleIds": [
+      "E1",
+      "A2",
+      "C3",
+      "B3",
+      "G2",
+      "G3",
+      "A3",
+      "C6"
+    ],
+    "exemptionLabels": [
+      "keep-open",
+      "blocked",
+      "do-not-close",
+      "hold",
+      "wip"
+    ],
+    "thresholds": {
+      "staleWarnDays": 30,
+      "staleCloseGraceDays": 7,
+      "draftCloseDays": 30,
+      "ciFailureCloseDays": 7,
+      "botSecurityCloseDays": 7
+    },
+    "limits": {
+      "maxClosuresPerRun": 20,
+      "maxCommentsPerRun": 30
+    }
+  },
+  "makeTargets": [
+    {
+      "name": "install",
+      "description": "Install Node dependencies"
+    },
+    {
+      "name": "check",
+      "description": "Typecheck + lint"
+    },
+    {
+      "name": "test",
+      "description": "Run tests"
+    },
+    {
+      "name": "security-scan",
+      "description": "Run local security scanners (gitleaks, semgrep if installed)"
+    },
+    {
+      "name": "pr-lifecycle-run",
+      "description": "Evaluate repo PRs via GitHub API (respects rollout mode)"
+    },
+    {
+      "name": "verify-harness",
+      "description": "Validate scaffold files and policy schema"
+    },
+    {
+      "name": "docs-curate",
+      "description": "Regenerate docs from repo snapshot (templates)"
+    },
+    {
+      "name": "docs-curate-agent",
+      "description": "Regenerate docs with optional DeepSeek polish"
+    },
+    {
+      "name": "help"
+    },
+    {
+      "name": "lint"
+    },
+    {
+      "name": "build"
+    },
+    {
+      "name": "pr-lifecycle-dry-run"
+    }
+  ],
+  "npmScripts": [
+    {
+      "name": "build",
+      "command": "tsc -p tsconfig.json"
+    },
+    {
+      "name": "check",
+      "command": "npm run build && npm run lint"
+    },
+    {
+      "name": "lint",
+      "command": "tsc -p tsconfig.json --noEmit"
+    },
+    {
+      "name": "test",
+      "command": "vitest run"
+    },
+    {
+      "name": "test:watch",
+      "command": "vitest"
+    },
+    {
+      "name": "pr-lifecycle:dry-run",
+      "command": "node --import tsx src/cli/dry-run.ts"
+    },
+    {
+      "name": "pr-lifecycle:run",
+      "command": "node --import tsx src/cli/run.ts"
+    },
+    {
+      "name": "docs:curate",
+      "command": "node --import tsx src/cli/curate-docs.ts"
+    },
+    {
+      "name": "security:scan",
+      "command": "make security-scan"
+    }
+  ],
+  "workflows": [
+    {
+      "file": "ci.yml",
+      "name": "CI",
+      "triggers": [
+        "pull_request",
+        "push"
+      ]
+    },
+    {
+      "file": "docs-curate.yml",
+      "name": "Docs Curate",
+      "triggers": [
+        "schedule",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "file": "pr-lifecycle.yml",
+      "name": "PR Lifecycle",
+      "triggers": [
+        "schedule",
+        "workflow_dispatch"
+      ]
+    },
+    {
+      "file": "security.yml",
+      "name": "Security",
+      "triggers": [
+        "workflow_dispatch",
+        "pull_request",
+        "push"
+      ]
+    }
+  ],
+  "sourceModules": [
+    "agent",
+    "cli",
+    "curator",
+    "engine",
+    "fixtures",
+    "platform",
+    "policy",
+    "runner"
+  ],
+  "envVars": [
+    "GITHUB_TOKEN is provided automatically in GitHub Actions",
+    "AGENTWATCH_TOKEN",
+    "PR_STEWARD_TARGET_REPO",
+    "PR_STEWARD_TRIAGE_PROVIDER",
+    "DEEPSEEK_API_KEY",
+    "DEEPSEEK_BASE_URL",
+    "DEEPSEEK_MODEL",
+    "CURSOR_API_KEY",
+    "GITLAB_TOKEN"
+  ],
+  "gitSummary": {
+    "recentCommits": [
+      "cd56950 Add DeepSeek triage and agentwatch fixture workflow dispatch.",
+      "ba9327c Add Phase 3 agent triage for ambiguous human superseded PRs.",
+      "c922fb1 Enable bot-only rollout and CI write permissions for PR actions.",
+      "fd1a8a1 Add Phase 2: superseded, duplicate, and two-phase stale rules.",
+      "00df99b Add Phase 1: tests, policy loader, GitHub client, and lifecycle runner.",
+      "e8b3fae Rename package and README to pr-steward.",
+      "f4f7144 Scaffold greenfield PR lifecycle automation repo."
+    ],
+    "branch": "main"
+  }
+}

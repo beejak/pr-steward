@@ -15,6 +15,7 @@
     "test:watch": "vitest",
     "pr-lifecycle:dry-run": "node --import tsx src/cli/dry-run.ts",
     "pr-lifecycle:run": "node --import tsx src/cli/run.ts",
+    "docs:curate": "node --import tsx src/cli/curate-docs.ts",
     "security:scan": "make security-scan"
   },
   "devDependencies": {

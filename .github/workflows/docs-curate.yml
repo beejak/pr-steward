@@ -1,0 +1,48 @@
+name: Docs Curate
+
+on:
+  workflow_dispatch:
+    inputs:
+      use_agent:
+        description: Polish README with DeepSeek (requires DEEPSEEK_API_KEY secret)
+        required: false
+        default: false
+        type: boolean
+  schedule:
+    - cron: "0 6 * * 1"  # weekly Monday 06:00 UTC
+
+permissions:
+  contents: read
+
+jobs:
+  curate:
+    name: Generate documentation
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+      - run: npm ci
+      - name: Run docs curator
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: |
+          if [ "${{ github.event.inputs.use_agent }}" = "true" ]; then
+            npm run docs:curate -- --agent
+          else
+            npm run docs:curate
+          fi
+      - name: Upload curated docs artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: curated-docs-${{ github.run_id }}
+          path: |
+            docs/.curator-context.json
+            docs/architecture.md
+            docs/commands.md
+            docs/help.md
+            docs/what-we-dont-do.md
+            README.md
+          if-no-files-found: error

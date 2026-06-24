@@ -1,6 +1,10 @@
 # pr-steward
 
-Hybrid multi-platform PR lifecycle automation: deterministic close/warn rules in CI, optional agent triage, and tiered security scanning.
+Hybrid multi-platform PR lifecycle automation (close, warn, security signals)
+
+**Rollout mode:** `bot-only` (from `policy/pr-lifecycle.yml`)
+
+pr-steward is hybrid PR lifecycle automation for GitHub (and GitLab scaffold). Deterministic rules close or warn on stale, superseded, duplicate, and CI-blocked pull requests. Optional agent triage handles ambiguous human overlap (rule C6) — never the sole authority to close human PRs.
 
 ## Quick start
 
@@ -9,8 +13,8 @@ npm install
 make verify-harness
 make test
 make check
-make pr-lifecycle-dry-run   # local samples
-# GITHUB_TOKEN=... make pr-lifecycle-run   # live repo (dry-run by default in policy)
+make pr-lifecycle-dry-run    # local sample PRs, no API
+# GITHUB_TOKEN=... make pr-lifecycle-run   # live repo (respects rollout mode)
 ```
 
 ### Pre-commit (Tier 1 security)
@@ -20,50 +24,105 @@ pip install pre-commit
 pre-commit install
 ```
 
-### Cursor
+Cursor hooks in `.cursor/hooks.json` scan file edits for secrets and run pre-commit on `git commit`.
 
-Project hooks in `.cursor/hooks.json` scan file edits for secrets and run pre-commit on `git commit`.
+## What it does
+
+| Capability | Detail |
+|------------|--------|
+| **Close bot PRs** | CI failures, superseded Dependabot bumps, duplicate issues, stale security findings (in `bot-only` / `full`) |
+| **Warn human PRs** | Stale, security review, ambiguous superseded (C6 triage → warn in `bot-only`) |
+| **Agent triage** | DeepSeek (preferred) → Cursor SDK (optional) → heuristic fallback for C6 |
+| **Policy-driven** | Thresholds, exemptions, rollout in `policy/pr-lifecycle.yml` |
+| **Tiered security** | Block secrets locally; flag SAST in CI; lifecycle labels for findings |
+
+## What it does **not** do
+
+See [docs/what-we-dont-do.md](docs/what-we-dont-do.md). In short: pr-steward **closes pull requests** (labels/comments) — it does **not** delete branches, purge files, or revert merged code.
 
 ## Architecture
 
-| Layer | Responsibility |
-|-------|----------------|
-| `policy/pr-lifecycle.yml` | Thresholds, exemptions, rollout mode |
-| `src/policy/load.ts` | YAML → `PolicyConfig` |
-| `src/engine/evaluate.ts` | Rule evaluation |
-| `src/agent/` | Heuristic + optional Cursor SDK triage for C6 |
-| `src/runner/lifecycle.ts` | Orchestrator (respects dry-run / bot-only / full) |
-| `src/platform/github/` | API client + normalizer |
-| `tests/` | Vitest fixtures + rollout matrix |
+See [docs/architecture.md](docs/architecture.md) for components, data flow, and mermaid diagrams.
+
+| Layer | Path |
+|-------|------|
+| Policy | `policy/pr-lifecycle.yml` |
+| Rule engine | `src/engine/evaluate.ts` |
+| Agent triage | `src/agent/` |
+| Orchestrator | `src/runner/lifecycle.ts` |
+| GitHub client | `src/platform/github/` |
+| Docs curator | `src/curator/` |
+
+## Commands
+
+Full reference: [docs/commands.md](docs/commands.md)
+
+| Target | Description |
+|--------|-------------|
+| `install` | Install Node dependencies |
+| `check` | Typecheck + lint |
+| `test` | Run tests |
+| `security-scan` | Run local security scanners (gitleaks, semgrep if installed) |
+| `pr-lifecycle-run` | Evaluate repo PRs via GitHub API (respects rollout mode) |
+| `verify-harness` | Validate scaffold files and policy schema |
+| `docs-curate` | Regenerate docs from repo snapshot (templates) |
+| `docs-curate-agent` | Regenerate docs with optional DeepSeek polish |
+| `help` | — |
+| `lint` | — |
+| `build` | — |
+| `pr-lifecycle-dry-run` | — |
+
 
 ## Rollout modes
 
-- `dry-run` — evaluate only, no API writes (default during tuning)
-- `bot-only` — **current** — auto-close/warn bot PRs only; human PRs get warns where allowed, never closes
-- `full` — all rules including human stale close (A3b) after grace
+| Mode | Behavior |
+|------|----------|
+| `dry-run` | Evaluate only; no API writes |
+| `bot-only` | **Current** — auto-close/warn bot PRs; human PRs warned only, never closed |
+| `full` | All rules including human stale close (A3b) after grace period |
 
-## What pr-steward does *not* purge
+## Security tiers
 
-pr-steward **closes pull requests** (and may add labels/comments). It does **not**:
+1. **Local block** — pre-commit gitleaks + Cursor hooks on file edit
+2. **CI flag** — Semgrep + CodeQL annotate PRs (non-blocking during rollout)
+3. **Lifecycle** — bot PRs with persistent critical findings + inactivity may close; human PRs get `security:review-required` only
 
-- Delete files or folders from your repository
-- Remove merged code from `main`
-- Delete source branches after closing a PR (branches remain unless you delete them manually or use GitHub’s “delete branch on merge” setting)
+## Agent triage
 
-Closing a stale Dependabot PR only removes it from the open-PR queue — it does not revert or purge anything already merged.
+See [docs/phase3-agent-triage.md](docs/phase3-agent-triage.md).
 
-## What gets closed in `bot-only` mode
+| Provider | When |
+|----------|------|
+| `deepseek` | `DEEPSEEK_API_KEY` set (preferred) |
+| `cursor` | `CURSOR_API_KEY` + `@cursor/sdk` |
+| `heuristic` | File-overlap fallback |
+| `auto` | DeepSeek → Cursor → heuristic |
 
-| Rule | Bot PR | Human PR |
-|------|--------|----------|
-| B3 CI/conflict + inactive | Close | Skip close |
-| C1/C2/C3 superseded/duplicate | Close | Warn (C6) or skip |
-| G2 security stale | Close | Warn only |
-| A3 stale | N/A | Warn only |
+## agentwatch sandbox
 
-## Docs
+Live fixture repo: [beejak/agentwatch](https://github.com/beejak/agentwatch). See [docs/agentwatch-fixture.md](docs/agentwatch-fixture.md).
+
+## Help & troubleshooting
+
+[docs/help.md](docs/help.md) — secrets, env vars, rollout FAQ, local vs CI.
+
+## Documentation curation
+
+Regenerate docs from repo facts:
+
+```bash
+make docs-curate              # templates (deterministic)
+DEEPSEEK_API_KEY=... make docs-curate-agent   # optional LLM polish
+```
+
+Snapshot: `docs/.curator-context.json` (generated).
+
+## More docs
 
 - [AGENTS.md](AGENTS.md) — canonical agent instructions
 - [docs/adr/0001-pr-lifecycle-architecture.md](docs/adr/0001-pr-lifecycle-architecture.md)
 - [docs/phase3-agent-triage.md](docs/phase3-agent-triage.md)
-- [docs/agentwatch-fixture.md](docs/agentwatch-fixture.md) — sandbox repo for live PR lifecycle tests
+- [docs/agentwatch-fixture.md](docs/agentwatch-fixture.md)
+
+---
+_Auto-curated sections sync with `make docs-curate`. Last context: 2026-06-24T06:21:53.669Z._

@@ -17,6 +17,8 @@ required=(
   src/policy/load.ts
   src/runner/lifecycle.ts
   src/platform/github/client.ts
+  src/curator/context.ts
+  src/cli/curate-docs.ts
 )
 
 missing=0

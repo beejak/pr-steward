@@ -22,6 +22,7 @@ Always prefer Makefile targets over ad-hoc commands:
 | `make pr-lifecycle-run` | Evaluate open PRs via GitHub API (respects `rollout.mode` in policy) |
 | `make test` | Run Vitest unit + integration tests |
 | `make verify-harness` | Validate scaffold integrity |
+| `make docs-curate` | Regenerate documentation from repo snapshot |
 
 ## Workflow (Superpowers-inspired)
 

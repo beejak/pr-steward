@@ -1,4 +1,4 @@
-.PHONY: help install check test lint build security-scan pr-lifecycle-dry-run pr-lifecycle-run verify-harness
+.PHONY: help install check test lint build security-scan pr-lifecycle-dry-run pr-lifecycle-run verify-harness docs-curate docs-curate-agent
 
 help:
 	@echo "Targets:"
@@ -9,6 +9,8 @@ help:
 	@echo "  pr-lifecycle-dry-run Evaluate sample PRs locally (no API)"
 	@echo "  pr-lifecycle-run     Evaluate repo PRs via GitHub API (respects rollout mode)"
 	@echo "  verify-harness       Validate scaffold files and policy schema"
+	@echo "  docs-curate          Regenerate docs from repo snapshot (templates)"
+	@echo "  docs-curate-agent    Regenerate docs with optional DeepSeek polish"
 
 install:
 	npm install
@@ -37,3 +39,9 @@ pr-lifecycle-run: install
 
 verify-harness:
 	bash scripts/verify-harness.sh
+
+docs-curate: install
+	npm run docs:curate
+
+docs-curate-agent: install
+	npm run docs:curate -- --agent
