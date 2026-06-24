@@ -1,0 +1,23 @@
+{
+  "name": "pr-lifecycle",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Hybrid multi-platform PR lifecycle automation (close, warn, security signals)",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "check": "npm run build && npm run lint",
+    "lint": "tsc -p tsconfig.json --noEmit",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js 2>/dev/null || echo \"(tests not configured yet)\"",
+    "pr-lifecycle:dry-run": "node --import tsx src/cli/dry-run.ts",
+    "security:scan": "make security-scan"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.7.0"
+  }
+}

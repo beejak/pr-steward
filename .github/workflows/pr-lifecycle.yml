@@ -1,0 +1,47 @@
+name: PR Lifecycle
+
+on:
+  schedule:
+    - cron: "0 9 * * 1-5"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "Rollout mode override"
+        required: false
+        default: dry-run
+        type: choice
+        options:
+          - dry-run
+          - bot-only
+          - full
+
+permissions:
+  contents: read
+
+jobs:
+  collect:
+    name: Collect PRs
+    runs-on: ubuntu-latest
+    outputs:
+      actions_json: ${{ steps.evaluate.outputs.actions }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - run: npm ci
+      - name: Dry-run evaluation
+        id: evaluate
+        run: npm run pr-lifecycle:dry-run
+
+  # Phase 1: separate apply job with pull-requests: write
+  apply:
+    name: Apply actions
+    needs: collect
+    if: false  # enabled when platform clients + tokens are wired
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+      issues: write
+    steps:
+      - run: echo "Apply job placeholder — wire GitHubClient/GitLabClient in Phase 1"

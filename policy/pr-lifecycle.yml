@@ -1,0 +1,81 @@
+# PR Lifecycle Policy
+
+# Rule evaluation order: first match wins (see docs in plan).
+
+version: 1
+
+exemption_labels:
+  - keep-open
+  - blocked
+  - do-not-close
+  - hold
+  - wip
+
+security_labels:
+  findings: security:findings
+  review_required: security:review-required
+  secret_detected: security:secret-detected
+
+thresholds:
+  stale_warn_days: 30
+  stale_close_grace_days: 7
+  draft_close_days: 30
+  ci_failure_close_days: 7
+  bot_security_close_days: 7
+
+# Categories: close | warn | skip | agent_review
+rules:
+  - id: E1
+    category: exemption
+    action: skip
+    description: PR has exemption label
+
+  - id: A2
+    category: inactive_draft
+    action: close
+    min_inactive_days: 30
+    authors: bot
+
+  - id: C3
+    category: dependabot_superseded
+    action: close
+    authors: bot
+
+  - id: B3
+    category: ci_or_conflict_inactive
+    action: close
+    min_inactive_days: 7
+    requires: failing_checks_or_merge_conflict
+
+  - id: G2
+    category: security_stale_bot
+    action: close
+    min_inactive_days: 7
+    authors: bot
+    requires: critical_security_finding
+
+  - id: G3
+    category: security_human
+    action: warn
+    label: security:review-required
+
+  - id: A3
+    category: human_stale
+    action: warn
+    min_inactive_days: 30
+    label: stale
+
+  - id: C6
+    category: ambiguous_superseded
+    action: agent_review
+    confidence_threshold: 0.9
+
+limits:
+  max_closures_per_run: 20
+  max_comments_per_run: 30
+
+rollout:
+  mode: dry-run  # dry-run | bot-only | full
+  platforms:
+    - github
+    - gitlab

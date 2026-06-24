@@ -1,0 +1,15 @@
+---
+description: PR lifecycle project conventions — policy, safety, and workflow.
+globs:
+  - "**/*"
+alwaysApply: true
+---
+
+# PR Lifecycle conventions
+
+Read `AGENTS.md` for full instructions.
+
+- Policy lives in `policy/pr-lifecycle.yml`; change policy before changing closure logic
+- Human PRs: warn before close; bot PRs: stricter auto-close allowed
+- Security: Tier 1 block secrets; Tier 2 CI flag; Tier 3 lifecycle labels only
+- Prefer `make` targets; run `make verify-harness` after scaffold changes
