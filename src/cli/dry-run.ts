@@ -1,51 +1,23 @@
 #!/usr/bin/env node
 /**
- * Dry-run CLI — evaluates sample PRs against the rule engine.
- * Platform API integration comes in Phase 1.
+ * Local dry-run — evaluates built-in sample PRs against loaded policy.
  */
 import { evaluatePullRequest, shouldApplyAction } from "../engine/evaluate.js";
-import type { PullRequest } from "../types.js";
+import { loadPolicy } from "../policy/load.js";
+import { botPr, humanPr } from "../fixtures/pr-samples.js";
 
-const samples: PullRequest[] = [
-  {
-    id: "gh-1",
-    number: 1,
-    platform: "github",
-    title: "Bump lodash",
-    author: "dependabot[bot]",
-    isDraft: false,
-    isBot: true,
-    labels: [],
-    updatedAt: new Date(),
-    createdAt: new Date(),
-    mergeConflict: true,
-    checksFailing: true,
-    criticalSecurityFinding: false,
-    inactiveDays: 10,
-  },
-  {
-    id: "gh-2",
-    number: 2,
-    platform: "github",
-    title: "Add auth module",
-    author: "human-dev",
-    isDraft: false,
-    isBot: false,
-    labels: [],
-    updatedAt: new Date(),
-    createdAt: new Date(),
-    mergeConflict: false,
-    checksFailing: false,
-    criticalSecurityFinding: true,
-    inactiveDays: 3,
-  },
+const policy = loadPolicy();
+const samples = [
+  botPr({ checksFailing: true, inactiveDays: 10 }),
+  humanPr({ criticalSecurityFinding: true, inactiveDays: 3 }),
+  humanPr({ inactiveDays: 35 }),
 ];
 
-console.log("PR Lifecycle dry-run (policy mode: dry-run)\n");
+console.log(`PR Lifecycle dry-run (rollout: ${policy.rollout.mode})\n`);
 
 for (const pr of samples) {
-  const decision = evaluatePullRequest(pr);
-  const wouldApply = shouldApplyAction(decision, "dry-run", pr);
+  const decision = evaluatePullRequest(pr, policy);
+  const wouldApply = shouldApplyAction(decision, policy.rollout.mode, pr);
   console.log(`PR #${pr.number} (${pr.author})`);
   console.log(`  → ${decision.action} [${decision.ruleId}] ${decision.reason}`);
   console.log(`  apply=${wouldApply} confidence=${decision.confidence}\n`);

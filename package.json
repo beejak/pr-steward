@@ -11,13 +11,18 @@
     "build": "tsc -p tsconfig.json",
     "check": "npm run build && npm run lint",
     "lint": "tsc -p tsconfig.json --noEmit",
-    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js 2>/dev/null || echo \"(tests not configured yet)\"",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "pr-lifecycle:dry-run": "node --import tsx src/cli/dry-run.ts",
+    "pr-lifecycle:run": "node --import tsx src/cli/run.ts",
     "security:scan": "make security-scan"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "tsx": "^4.19.0",
-    "typescript": "^5.7.0"
-  }
+    "typescript": "^5.7.0",
+    "vitest": "^3.0.0",
+    "yaml": "^2.7.0"
+  },
+  "dependencies": {}
 }

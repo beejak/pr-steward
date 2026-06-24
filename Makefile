@@ -1,4 +1,4 @@
-.PHONY: help install check test lint build security-scan pr-lifecycle-dry-run verify-harness
+.PHONY: help install check test lint build security-scan pr-lifecycle-dry-run pr-lifecycle-run verify-harness
 
 help:
 	@echo "Targets:"
@@ -6,7 +6,8 @@ help:
 	@echo "  check                Typecheck + lint"
 	@echo "  test                 Run tests"
 	@echo "  security-scan        Run local security scanners (gitleaks, semgrep if installed)"
-	@echo "  pr-lifecycle-dry-run Evaluate PR lifecycle policy (no writes)"
+	@echo "  pr-lifecycle-dry-run Evaluate sample PRs locally (no API)"
+	@echo "  pr-lifecycle-run     Evaluate repo PRs via GitHub API (respects rollout mode)"
 	@echo "  verify-harness       Validate scaffold files and policy schema"
 
 install:
@@ -30,6 +31,9 @@ security-scan:
 
 pr-lifecycle-dry-run: install
 	npm run pr-lifecycle:dry-run
+
+pr-lifecycle-run: install
+	npm run pr-lifecycle:run
 
 verify-harness:
 	bash scripts/verify-harness.sh

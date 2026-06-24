@@ -33,6 +33,10 @@ export interface PolicyConfig {
     ciFailureCloseDays: number;
     botSecurityCloseDays: number;
   };
+  limits?: {
+    maxClosuresPerRun: number;
+    maxCommentsPerRun: number;
+  };
   rollout: {
     mode: "dry-run" | "bot-only" | "full";
   };

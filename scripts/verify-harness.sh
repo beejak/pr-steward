@@ -13,6 +13,10 @@ required=(
   .cursor/hooks.json
   .cursor/hooks/security-check.sh
   security/semgrep/rules.yml
+  vitest.config.ts
+  src/policy/load.ts
+  src/runner/lifecycle.ts
+  src/platform/github/client.ts
 )
 
 missing=0

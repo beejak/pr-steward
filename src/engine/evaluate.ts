@@ -1,16 +1,7 @@
 import type { PolicyConfig, PullRequest, RuleDecision } from "../types.js";
+import { defaultPolicy } from "../policy/load.js";
 
-const DEFAULT_POLICY: PolicyConfig = {
-  exemptionLabels: ["keep-open", "blocked", "do-not-close", "hold", "wip"],
-  thresholds: {
-    staleWarnDays: 30,
-    staleCloseGraceDays: 7,
-    draftCloseDays: 30,
-    ciFailureCloseDays: 7,
-    botSecurityCloseDays: 7,
-  },
-  rollout: { mode: "dry-run" },
-};
+const DEFAULT_POLICY: PolicyConfig = defaultPolicy();
 
 function hasExemption(pr: PullRequest, policy: PolicyConfig): boolean {
   return pr.labels.some((l) => policy.exemptionLabels.includes(l));

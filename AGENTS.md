@@ -18,7 +18,9 @@ Always prefer Makefile targets over ad-hoc commands:
 |--------|---------|
 | `make check` | Typecheck before commit |
 | `make security-scan` | Local gitleaks + semgrep |
-| `make pr-lifecycle-dry-run` | Evaluate policy without API writes |
+| `make pr-lifecycle-dry-run` | Evaluate sample PRs locally (no API) |
+| `make pr-lifecycle-run` | Evaluate open PRs via GitHub API (respects `rollout.mode` in policy) |
+| `make test` | Run Vitest unit + integration tests |
 | `make verify-harness` | Validate scaffold integrity |
 
 ## Workflow (Superpowers-inspired)

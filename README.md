@@ -7,8 +7,10 @@ Hybrid multi-platform PR lifecycle automation: deterministic close/warn rules in
 ```bash
 npm install
 make verify-harness
+make test
 make check
-make pr-lifecycle-dry-run
+make pr-lifecycle-dry-run   # local samples
+# GITHUB_TOKEN=... make pr-lifecycle-run   # live repo (dry-run by default in policy)
 ```
 
 ### Pre-commit (Tier 1 security)
@@ -26,10 +28,12 @@ Project hooks in `.cursor/hooks.json` scan file edits for secrets and run pre-co
 
 | Layer | Responsibility |
 |-------|----------------|
-| `policy/pr-lifecycle.yml` | Thresholds, exemptions, rule IDs |
-| `src/engine/` | Rule evaluation (TypeScript) |
-| `.github/workflows/` | Security scans + scheduled lifecycle |
-| `.cursor/hooks/` | Dev-time secret blocking |
+| `policy/pr-lifecycle.yml` | Thresholds, exemptions, rollout mode |
+| `src/policy/load.ts` | YAML → `PolicyConfig` |
+| `src/engine/evaluate.ts` | Rule evaluation |
+| `src/runner/lifecycle.ts` | Orchestrator (respects dry-run / bot-only / full) |
+| `src/platform/github/` | API client + normalizer |
+| `tests/` | Vitest fixtures + rollout matrix |
 
 ## Rollout modes
 
