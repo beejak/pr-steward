@@ -1,4 +1,4 @@
-# pr-lifecycle
+# pr-steward
 
 Hybrid multi-platform PR lifecycle automation: deterministic close/warn rules in CI, optional agent triage, and tiered security scanning.
 
