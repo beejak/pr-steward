@@ -7,7 +7,7 @@ import { describe, expect, it } from "vitest";
 describe("loadPolicy", () => {
   it("loads policy/pr-lifecycle.yml", () => {
     const policy = loadPolicy();
-    expect(policy.rollout.mode).toBe("dry-run");
+    expect(policy.rollout.mode).toBe("bot-only");
     expect(policy.thresholds.ciFailureCloseDays).toBe(7);
     expect(policy.exemptionLabels).toContain("keep-open");
   });

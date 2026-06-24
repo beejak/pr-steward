@@ -37,9 +37,28 @@ Project hooks in `.cursor/hooks.json` scan file edits for secrets and run pre-co
 
 ## Rollout modes
 
-- `dry-run` — evaluate only, no API writes (default)
-- `bot-only` — auto-close bot PRs matching safe rules
-- `full` — all rules after tuning period
+- `dry-run` — evaluate only, no API writes (default during tuning)
+- `bot-only` — **current** — auto-close/warn bot PRs only; human PRs get warns where allowed, never closes
+- `full` — all rules including human stale close (A3b) after grace
+
+## What pr-steward does *not* purge
+
+pr-steward **closes pull requests** (and may add labels/comments). It does **not**:
+
+- Delete files or folders from your repository
+- Remove merged code from `main`
+- Delete source branches after closing a PR (branches remain unless you delete them manually or use GitHub’s “delete branch on merge” setting)
+
+Closing a stale Dependabot PR only removes it from the open-PR queue — it does not revert or purge anything already merged.
+
+## What gets closed in `bot-only` mode
+
+| Rule | Bot PR | Human PR |
+|------|--------|----------|
+| B3 CI/conflict + inactive | Close | Skip close |
+| C1/C2/C3 superseded/duplicate | Close | Warn (C6) or skip |
+| G2 security stale | Close | Warn only |
+| A3 stale | N/A | Warn only |
 
 ## Docs
 

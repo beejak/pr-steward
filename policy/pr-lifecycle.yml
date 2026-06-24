@@ -75,7 +75,7 @@ limits:
   max_comments_per_run: 30
 
 rollout:
-  mode: dry-run  # dry-run | bot-only | full
+  mode: bot-only  # dry-run | bot-only | full
   platforms:
     - github
     - gitlab
