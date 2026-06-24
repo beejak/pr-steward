@@ -51,9 +51,9 @@ export function evaluatePullRequest(
       };
     }
     return {
-      action: "warn",
+      action: "agent_review",
       ruleId: "C6",
-      reason: "Possible overlap with merged work — human review suggested",
+      reason: "Ambiguous overlap with merged work — agent triage required",
       confidence: 0.6,
     };
   }

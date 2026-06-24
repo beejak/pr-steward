@@ -26,6 +26,7 @@ jobs:
       - name: Run lifecycle (policy rollout mode)
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CURSOR_API_KEY: ${{ secrets.CURSOR_API_KEY }}
         run: npm run pr-lifecycle:run
       - name: Upload report
         if: always()

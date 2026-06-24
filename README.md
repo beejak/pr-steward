@@ -31,6 +31,7 @@ Project hooks in `.cursor/hooks.json` scan file edits for secrets and run pre-co
 | `policy/pr-lifecycle.yml` | Thresholds, exemptions, rollout mode |
 | `src/policy/load.ts` | YAML → `PolicyConfig` |
 | `src/engine/evaluate.ts` | Rule evaluation |
+| `src/agent/` | Heuristic + optional Cursor SDK triage for C6 |
 | `src/runner/lifecycle.ts` | Orchestrator (respects dry-run / bot-only / full) |
 | `src/platform/github/` | API client + normalizer |
 | `tests/` | Vitest fixtures + rollout matrix |
@@ -64,3 +65,4 @@ Closing a stale Dependabot PR only removes it from the open-PR queue — it does
 
 - [AGENTS.md](AGENTS.md) — canonical agent instructions
 - [docs/adr/0001-pr-lifecycle-architecture.md](docs/adr/0001-pr-lifecycle-architecture.md)
+- [docs/phase3-agent-triage.md](docs/phase3-agent-triage.md)

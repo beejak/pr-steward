@@ -2,26 +2,36 @@ import type { PolicyConfig, PullRequest, RuleDecision } from "../types.js";
 import { evaluatePullRequest, shouldApplyAction } from "../engine/evaluate.js";
 import { buildEvaluationContext } from "../engine/context.js";
 import type { PlatformClient } from "../platform/client.js";
+import { triagePullRequest } from "../agent/triage.js";
+import { mergeAgentVerdict, needsAgentTriage } from "../agent/gate.js";
+import type { AgentVerdict } from "../agent/types.js";
 
 export interface LifecycleResult {
   pr: PullRequest;
   decision: RuleDecision;
   applied: boolean;
   skippedReason?: string;
+  agentVerdict?: AgentVerdict;
 }
 
 export interface RunSummary {
   mode: PolicyConfig["rollout"]["mode"];
   evaluated: number;
+  agentTriaged: number;
   results: LifecycleResult[];
   closuresApplied: number;
   warningsApplied: number;
 }
 
+export interface LifecycleRunnerOptions {
+  cursorApiKey?: string;
+  repository?: string;
+}
+
 function labelForDecision(decision: RuleDecision): string | undefined {
   if (decision.ruleId === "A3" || decision.ruleId === "A3b") return "stale";
   if (decision.ruleId === "G3") return "security:review-required";
-  if (decision.ruleId === "C1" || decision.ruleId === "C2" || decision.ruleId === "C3") {
+  if (decision.ruleId === "C1" || decision.ruleId === "C2" || decision.ruleId === "C3" || decision.ruleId === "C6") {
     return "superseded";
   }
   if (decision.action === "close") return "pr-steward:auto-closed";
@@ -36,10 +46,12 @@ function commentForDecision(decision: RuleDecision, mode: string): string {
 export class LifecycleRunner {
   private closuresApplied = 0;
   private commentsApplied = 0;
+  private agentTriaged = 0;
 
   constructor(
     private readonly client: PlatformClient,
     private readonly policy: PolicyConfig,
+    private readonly options: LifecycleRunnerOptions = {},
   ) {}
 
   async run(): Promise<RunSummary> {
@@ -53,7 +65,33 @@ export class LifecycleRunner {
     };
 
     for (const pr of pullRequests) {
-      const decision = evaluatePullRequest(pr, this.policy, context);
+      let decision = evaluatePullRequest(pr, this.policy, context);
+      let agentVerdict: AgentVerdict | undefined;
+
+      if (needsAgentTriage(decision)) {
+        agentVerdict = await triagePullRequest(
+          { pr, context },
+          {
+            apiKey: this.options.cursorApiKey,
+            repo: this.options.repository,
+          },
+        );
+        this.agentTriaged += 1;
+        decision = mergeAgentVerdict(decision, agentVerdict);
+      }
+
+      if (
+        this.policy.rollout.mode === "bot-only" &&
+        !pr.isBot &&
+        decision.action === "close"
+      ) {
+        decision = {
+          ...decision,
+          action: "warn",
+          reason: `${decision.reason} (warn-only for human PRs in bot-only rollout)`,
+        };
+      }
+
       const wouldApply = shouldApplyAction(decision, this.policy.rollout.mode, pr);
 
       if (!wouldApply) {
@@ -61,6 +99,7 @@ export class LifecycleRunner {
           pr,
           decision,
           applied: false,
+          agentVerdict,
           skippedReason:
             this.policy.rollout.mode === "dry-run"
               ? "dry-run mode"
@@ -76,6 +115,7 @@ export class LifecycleRunner {
           pr,
           decision,
           applied: false,
+          agentVerdict,
           skippedReason: "max closures per run",
         });
         continue;
@@ -86,6 +126,7 @@ export class LifecycleRunner {
           pr,
           decision,
           applied: false,
+          agentVerdict,
           skippedReason: "max comments per run",
         });
         continue;
@@ -107,12 +148,18 @@ export class LifecycleRunner {
         }
       }
 
-      results.push({ pr, decision, applied: this.policy.rollout.mode !== "dry-run" });
+      results.push({
+        pr,
+        decision,
+        applied: this.policy.rollout.mode !== "dry-run",
+        agentVerdict,
+      });
     }
 
     return {
       mode: this.policy.rollout.mode,
       evaluated: pullRequests.length,
+      agentTriaged: this.agentTriaged,
       results,
       closuresApplied: this.closuresApplied,
       warningsApplied: results.filter((r) => r.applied && r.decision.action === "warn").length,

@@ -88,6 +88,20 @@ describe("Phase 2 rules", () => {
     );
   });
 
+  it("C6: human overlap routes to agent_review", () => {
+    const ctx = buildEvaluationContext(
+      [humanPr({ number: 4, createdAt: new Date("2026-01-01"), changedFiles: ["src/a.ts"] })],
+      [{ number: 10, mergedAt: new Date("2026-03-01"), files: ["src/a.ts"] }],
+    );
+    const decision = evaluatePullRequest(
+      humanPr({ number: 4, changedFiles: ["src/a.ts"] }),
+      policy,
+      ctx,
+    );
+    expect(decision.ruleId).toBe("C6");
+    expect(decision.action).toBe("agent_review");
+  });
+
   it("A3b: closes human PR after stale label + grace", () => {
     const pr = humanPr({
       labels: ["stale"],

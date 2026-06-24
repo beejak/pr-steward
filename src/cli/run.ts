@@ -46,7 +46,10 @@ async function main(): Promise<void> {
   const policy = loadPolicy();
   const { owner, repo } = parseRepo();
   const client = new GitHubClient({ owner, repo, token });
-  const runner = new LifecycleRunner(client, policy);
+  const runner = new LifecycleRunner(client, policy, {
+    cursorApiKey: process.env.CURSOR_API_KEY,
+    repository: process.env.GITHUB_REPOSITORY ?? `${owner}/${repo}`,
+  });
 
   const summary = await runner.run();
   const reportPath = writeReport(summary);
@@ -62,6 +65,7 @@ async function main(): Promise<void> {
     `### pr-steward run (mode: ${summary.mode})`,
     "",
     `- Evaluated: ${summary.evaluated}`,
+    `- Agent triaged: ${summary.agentTriaged}`,
     `- Would close/warn: ${actionable.length}`,
     `- Applied: ${summary.closuresApplied} closes, ${summary.warningsApplied} warns`,
     "",
