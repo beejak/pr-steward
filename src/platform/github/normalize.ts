@@ -12,13 +12,19 @@ const FAILING_CONCLUSIONS = new Set([
 export interface GitHubPullRaw {
   number: number;
   title: string;
+  body?: string;
   draft: boolean;
   created_at: string;
   updated_at: string;
+  merged_at?: string | null;
   user: { login: string };
   labels: Array<{ name: string }>;
   mergeable_state?: string;
   statusCheckRollup?: Array<{ state?: string; conclusion?: string | null }>;
+}
+
+export interface GitHubPullFile {
+  filename: string;
 }
 
 export function isBotAuthor(login: string): boolean {
@@ -62,6 +68,7 @@ export function normalizeGitHubPull(
     number: raw.number,
     platform: "github",
     title: raw.title,
+    body: raw.body,
     author,
     isDraft: raw.draft,
     isBot: isBotAuthor(author),

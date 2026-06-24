@@ -5,6 +5,7 @@ export interface PullRequest {
   number: number;
   platform: "github" | "gitlab";
   title: string;
+  body?: string;
   author: string;
   isDraft: boolean;
   isBot: boolean;
@@ -15,7 +16,27 @@ export interface PullRequest {
   checksFailing: boolean;
   criticalSecurityFinding: boolean;
   inactiveDays: number;
+  changedFiles?: string[];
+  closingIssueNumbers?: number[];
 }
+
+export interface MergedPullRequest {
+  number: number;
+  mergedAt: Date;
+  files: string[];
+}
+
+export interface EvaluationContext {
+  mergedPullRequests: MergedPullRequest[];
+  duplicatePrNumbers: ReadonlySet<number>;
+  dependabotSupersededNumbers: ReadonlySet<number>;
+}
+
+export const EMPTY_CONTEXT: EvaluationContext = {
+  mergedPullRequests: [],
+  duplicatePrNumbers: new Set(),
+  dependabotSupersededNumbers: new Set(),
+};
 
 export interface RuleDecision {
   action: PullRequestAction;

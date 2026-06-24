@@ -1,5 +1,6 @@
 import type { PolicyConfig, PullRequest, RuleDecision } from "../types.js";
 import { evaluatePullRequest, shouldApplyAction } from "../engine/evaluate.js";
+import { buildEvaluationContext } from "../engine/context.js";
 import type { PlatformClient } from "../platform/client.js";
 
 export interface LifecycleResult {
@@ -18,17 +19,17 @@ export interface RunSummary {
 }
 
 function labelForDecision(decision: RuleDecision): string | undefined {
-  if (decision.ruleId === "A3") return "stale";
+  if (decision.ruleId === "A3" || decision.ruleId === "A3b") return "stale";
   if (decision.ruleId === "G3") return "security:review-required";
+  if (decision.ruleId === "C1" || decision.ruleId === "C2" || decision.ruleId === "C3") {
+    return "superseded";
+  }
   if (decision.action === "close") return "pr-steward:auto-closed";
   return undefined;
 }
 
 function commentForDecision(decision: RuleDecision, mode: string): string {
-  const prefix =
-    mode === "dry-run"
-      ? "*(dry-run — no action taken)*\n\n"
-      : "";
+  const prefix = mode === "dry-run" ? "*(dry-run — no action taken)*\n\n" : "";
   return `${prefix}**pr-steward** [${decision.ruleId}]: ${decision.reason}\n\n_Reopen or comment if this was incorrect._`;
 }
 
@@ -43,6 +44,8 @@ export class LifecycleRunner {
 
   async run(): Promise<RunSummary> {
     const pullRequests = await this.client.listOpenPullRequests();
+    const merged = (await this.client.listRecentlyMergedPullRequests?.(90)) ?? [];
+    const context = buildEvaluationContext(pullRequests, merged);
     const results: LifecycleResult[] = [];
     const limits = this.policy.limits ?? {
       maxClosuresPerRun: 20,
@@ -50,7 +53,7 @@ export class LifecycleRunner {
     };
 
     for (const pr of pullRequests) {
-      const decision = evaluatePullRequest(pr, this.policy);
+      const decision = evaluatePullRequest(pr, this.policy, context);
       const wouldApply = shouldApplyAction(decision, this.policy.rollout.mode, pr);
 
       if (!wouldApply) {
@@ -61,15 +64,14 @@ export class LifecycleRunner {
           skippedReason:
             this.policy.rollout.mode === "dry-run"
               ? "dry-run mode"
-              : "rollout policy",
+              : decision.ruleId === "A3b"
+                ? "A3b requires full rollout"
+                : "rollout policy",
         });
         continue;
       }
 
-      if (
-        decision.action === "close" &&
-        this.closuresApplied >= limits.maxClosuresPerRun
-      ) {
+      if (decision.action === "close" && this.closuresApplied >= limits.maxClosuresPerRun) {
         results.push({
           pr,
           decision,
@@ -97,6 +99,7 @@ export class LifecycleRunner {
           await this.client.closePullRequest(pr.number, comment);
           this.closuresApplied += 1;
           this.commentsApplied += 1;
+          if (label) await this.client.addLabel(pr.number, label);
         } else if (decision.action === "warn") {
           await this.client.addComment(pr.number, comment);
           this.commentsApplied += 1;
@@ -112,9 +115,7 @@ export class LifecycleRunner {
       evaluated: pullRequests.length,
       results,
       closuresApplied: this.closuresApplied,
-      warningsApplied: results.filter(
-        (r) => r.applied && r.decision.action === "warn",
-      ).length,
+      warningsApplied: results.filter((r) => r.applied && r.decision.action === "warn").length,
     };
   }
 }

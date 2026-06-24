@@ -17,7 +17,7 @@ describe("LifecycleRunner", () => {
     expect(summary.evaluated).toBe(2);
     expect(summary.closuresApplied).toBe(0);
     expect(summary.results.every((r) => !r.applied)).toBe(true);
-    expect(client.calls.filter((c) => c.method !== "listOpenPullRequests")).toHaveLength(0);
+    expect(client.calls.filter((c) => c.method !== "listOpenPullRequests" && c.method !== "listRecentlyMergedPullRequests")).toHaveLength(0);
   });
 
   it("bot-only closes bot PR and warns human but does not close human draft", async () => {
