@@ -74,6 +74,10 @@ limits:
   max_closures_per_run: 20
   max_comments_per_run: 30
 
+# Production rollout: pr-steward dogfoods here in bot-only mode.
+# Before switching rollout.mode to full, complete the checklist in docs/production-rollout.md.
+# agentwatch remains the sandbox fixture repo — not the production gate.
+
 rollout:
   mode: bot-only  # dry-run | bot-only | full
   platforms:

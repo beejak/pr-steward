@@ -81,6 +81,8 @@ ${makeTable(ctx.makeTargets)}
 | \`bot-only\` | **Current** — auto-close/warn bot PRs; human PRs warned only, never closed |
 | \`full\` | All rules including human stale close (A3b) after grace period |
 
+Production soak and \`full\` cutover: [docs/production-rollout.md](docs/production-rollout.md).
+
 ## Security tiers
 
 1. **Local block** — pre-commit gitleaks + Cursor hooks on file edit
@@ -123,6 +125,7 @@ Snapshot: \`docs/.curator-context.json\` (generated).
 - [docs/adr/0001-pr-lifecycle-architecture.md](docs/adr/0001-pr-lifecycle-architecture.md)
 - [docs/phase3-agent-triage.md](docs/phase3-agent-triage.md)
 - [docs/agentwatch-fixture.md](docs/agentwatch-fixture.md)
+- [docs/production-rollout.md](docs/production-rollout.md)
 
 ---
 _Auto-curated sections sync with \`make docs-curate\`. Last context: ${ctx.generatedAt}._
@@ -348,6 +351,10 @@ Technically yes with \`make pr-lifecycle-run\` and a write-scoped token, but **A
 ### How do I test against a sandbox repo?
 
 Use [agentwatch-fixture.md](agentwatch-fixture.md): workflow dispatch with \`target_repo: beejak/agentwatch\` and \`AGENTWATCH_TOKEN\` secret.
+
+### When can we switch to \`full\` rollout on pr-steward?
+
+See [production-rollout.md](production-rollout.md) — weekly monitoring on \`beejak/pr-steward\` in \`bot-only\`, checklist (2 weeks clean runs, zero reopens, team sign-off), and rollback steps. agentwatch is sandbox only.
 
 ### Agent triage returns heuristic only
 

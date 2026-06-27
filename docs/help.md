@@ -18,6 +18,10 @@ Technically yes with `make pr-lifecycle-run` and a write-scoped token, but **AGE
 
 Use [agentwatch-fixture.md](agentwatch-fixture.md): workflow dispatch with `target_repo: beejak/agentwatch` and `AGENTWATCH_TOKEN` secret.
 
+### When can we switch to `full` rollout on pr-steward?
+
+See [production-rollout.md](production-rollout.md) — weekly monitoring on `beejak/pr-steward` in `bot-only`, checklist (2 weeks clean runs, zero reopens, team sign-off), and rollback steps. agentwatch is sandbox only.
+
 ### Agent triage returns heuristic only
 
 1. Set `DEEPSEEK_API_KEY` (preferred) or `CURSOR_API_KEY`
@@ -86,4 +90,4 @@ Copy `.env.example` → `.env` for local use (never commit secrets).
 - Architecture: [architecture.md](architecture.md)
 
 ---
-_Context: 2026-06-27T05:41:48.266Z_
+_Context: 2026-06-27T07:56:32.283Z_

@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-27T05:41:48.266Z",
+  "generatedAt": "2026-06-27T07:56:32.283Z",
   "repo": {
     "name": "pr-steward",
     "version": "0.1.0",
@@ -189,6 +189,7 @@
   ],
   "gitSummary": {
     "recentCommits": [
+      "a0889be Add Phase 4 observability MVP with rule stats and reopen tracking.",
       "41f52f3 Sync curated docs after workflow artifact fix.",
       "6af92b9 Fix PR Lifecycle workflow dispatch by using run_id for artifact name.",
       "f4950da Fix PR Lifecycle artifact name for repos with slashes.",
@@ -197,8 +198,7 @@
       "ba9327c Add Phase 3 agent triage for ambiguous human superseded PRs.",
       "c922fb1 Enable bot-only rollout and CI write permissions for PR actions.",
       "fd1a8a1 Add Phase 2: superseded, duplicate, and two-phase stale rules.",
-      "00df99b Add Phase 1: tests, policy loader, GitHub client, and lifecycle runner.",
-      "e8b3fae Rename package and README to pr-steward."
+      "00df99b Add Phase 1: tests, policy loader, GitHub client, and lifecycle runner."
     ],
     "branch": "main"
   }

@@ -130,4 +130,4 @@ flowchart LR
 `src/curator/` scans the repo (Makefile, package.json, policy, workflows) → `docs/.curator-context.json` → template markdown. Optional DeepSeek pass when `DEEPSEEK_API_KEY` is set.
 
 ---
-_Context: 2026-06-27T05:41:48.266Z_
+_Context: 2026-06-27T07:56:32.283Z_

@@ -81,6 +81,8 @@ Full reference: [docs/commands.md](docs/commands.md)
 | `bot-only` | **Current** — auto-close/warn bot PRs; human PRs warned only, never closed |
 | `full` | All rules including human stale close (A3b) after grace period |
 
+Production soak and `full` cutover: [docs/production-rollout.md](docs/production-rollout.md).
+
 ## Security tiers
 
 1. **Local block** — pre-commit gitleaks + Cursor hooks on file edit
@@ -123,6 +125,7 @@ Snapshot: `docs/.curator-context.json` (generated).
 - [docs/adr/0001-pr-lifecycle-architecture.md](docs/adr/0001-pr-lifecycle-architecture.md)
 - [docs/phase3-agent-triage.md](docs/phase3-agent-triage.md)
 - [docs/agentwatch-fixture.md](docs/agentwatch-fixture.md)
+- [docs/production-rollout.md](docs/production-rollout.md)
 
 ---
-_Auto-curated sections sync with `make docs-curate`. Last context: 2026-06-27T05:41:48.266Z._
+_Auto-curated sections sync with `make docs-curate`. Last context: 2026-06-27T07:56:32.283Z._
