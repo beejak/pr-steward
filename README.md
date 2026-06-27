@@ -125,4 +125,4 @@ Snapshot: `docs/.curator-context.json` (generated).
 - [docs/agentwatch-fixture.md](docs/agentwatch-fixture.md)
 
 ---
-_Auto-curated sections sync with `make docs-curate`. Last context: 2026-06-24T06:21:53.669Z._
+_Auto-curated sections sync with `make docs-curate`. Last context: 2026-06-27T05:07:29.748Z._

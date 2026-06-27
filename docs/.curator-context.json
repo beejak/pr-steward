@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-24T06:21:53.669Z",
+  "generatedAt": "2026-06-27T05:07:29.748Z",
   "repo": {
     "name": "pr-steward",
     "version": "0.1.0",
@@ -189,6 +189,8 @@
   ],
   "gitSummary": {
     "recentCommits": [
+      "f4950da Fix PR Lifecycle artifact name for repos with slashes.",
+      "c2f5b74 Add documentation curator bot and comprehensive docs.",
       "cd56950 Add DeepSeek triage and agentwatch fixture workflow dispatch.",
       "ba9327c Add Phase 3 agent triage for ambiguous human superseded PRs.",
       "c922fb1 Enable bot-only rollout and CI write permissions for PR actions.",
