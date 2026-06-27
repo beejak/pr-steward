@@ -86,4 +86,4 @@ Copy `.env.example` → `.env` for local use (never commit secrets).
 - Architecture: [architecture.md](architecture.md)
 
 ---
-_Context: 2026-06-27T05:07:29.748Z_
+_Context: 2026-06-27T05:41:48.266Z_

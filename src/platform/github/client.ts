@@ -62,6 +62,18 @@ export class GitHubClient implements PlatformClient {
     return Promise.all(pulls.map((p) => this.enrichPull(p, repo)));
   }
 
+  async listReopenedAfterSteward(): Promise<number[]> {
+    interface LabeledIssue {
+      number: number;
+      pull_request?: unknown;
+    }
+
+    const issues = await this.api<LabeledIssue[]>(
+      "/issues?labels=pr-steward:auto-closed&state=open&per_page=100",
+    );
+    return issues.filter((i) => i.pull_request).map((i) => i.number);
+  }
+
   async listRecentlyMergedPullRequests(sinceDays = 90): Promise<MergedPullRequest[]> {
     const pulls = await this.api<GitHubPullRaw[]>(
       "/pulls?state=closed&sort=updated&direction=desc&per_page=50",

@@ -3,6 +3,7 @@ import type { EvaluationContext, MergedPullRequest, PullRequest } from "../types
 export interface PlatformClient {
   listOpenPullRequests(): Promise<PullRequest[]>;
   listRecentlyMergedPullRequests?(sinceDays?: number): Promise<MergedPullRequest[]>;
+  listReopenedAfterSteward?(): Promise<number[]>;
   closePullRequest(number: number, comment: string): Promise<void>;
   addLabel(number: number, label: string): Promise<void>;
   addComment(number: number, body: string): Promise<void>;

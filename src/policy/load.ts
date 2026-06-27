@@ -2,6 +2,7 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { parse } from "yaml";
 import type { PolicyConfig } from "../types.js";
+import { assertPolicyHardening } from "./validate.js";
 
 export interface RawPolicy {
   version: number;
@@ -77,5 +78,7 @@ export function loadPolicy(path: string = DEFAULT_PATH): PolicyConfig {
   if (raw.version !== 1) {
     throw new Error(`Unsupported policy version: ${raw.version}`);
   }
-  return parsePolicy(raw);
+  const policy = parsePolicy(raw);
+  assertPolicyHardening(policy);
+  return policy;
 }

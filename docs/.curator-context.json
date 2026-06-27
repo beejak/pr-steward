@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-27T05:07:29.748Z",
+  "generatedAt": "2026-06-27T05:41:48.266Z",
   "repo": {
     "name": "pr-steward",
     "version": "0.1.0",
@@ -189,6 +189,8 @@
   ],
   "gitSummary": {
     "recentCommits": [
+      "41f52f3 Sync curated docs after workflow artifact fix.",
+      "6af92b9 Fix PR Lifecycle workflow dispatch by using run_id for artifact name.",
       "f4950da Fix PR Lifecycle artifact name for repos with slashes.",
       "c2f5b74 Add documentation curator bot and comprehensive docs.",
       "cd56950 Add DeepSeek triage and agentwatch fixture workflow dispatch.",
@@ -196,8 +198,7 @@
       "c922fb1 Enable bot-only rollout and CI write permissions for PR actions.",
       "fd1a8a1 Add Phase 2: superseded, duplicate, and two-phase stale rules.",
       "00df99b Add Phase 1: tests, policy loader, GitHub client, and lifecycle runner.",
-      "e8b3fae Rename package and README to pr-steward.",
-      "f4f7144 Scaffold greenfield PR lifecycle automation repo."
+      "e8b3fae Rename package and README to pr-steward."
     ],
     "branch": "main"
   }

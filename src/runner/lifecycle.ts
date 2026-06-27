@@ -5,6 +5,12 @@ import type { PlatformClient } from "../platform/client.js";
 import { triagePullRequest, type TriageProvider } from "../agent/triage.js";
 import { mergeAgentVerdict, needsAgentTriage } from "../agent/gate.js";
 import type { AgentVerdict } from "../agent/types.js";
+import {
+  aggregateRuleStats,
+  buildRunMetadata,
+  type RuleStats,
+  type RunMetadata,
+} from "./metrics.js";
 
 export interface LifecycleResult {
   pr: PullRequest;
@@ -16,6 +22,9 @@ export interface LifecycleResult {
 
 export interface RunSummary {
   mode: PolicyConfig["rollout"]["mode"];
+  runMetadata: RunMetadata;
+  ruleStats: RuleStats;
+  reopenedAfterSteward: number[];
   evaluated: number;
   agentTriaged: number;
   results: LifecycleResult[];
@@ -164,8 +173,21 @@ export class LifecycleRunner {
       });
     }
 
+    const reopenedAfterSteward =
+      (await this.client.listReopenedAfterSteward?.()) ?? [];
+
+    const runMetadata = buildRunMetadata({
+      repository: this.options.repository ?? "unknown",
+      mode: this.policy.rollout.mode,
+      triageProvider: this.options.triageProvider ?? "auto",
+      timestamp: new Date().toISOString(),
+    });
+
     return {
       mode: this.policy.rollout.mode,
+      runMetadata,
+      ruleStats: aggregateRuleStats(results),
+      reopenedAfterSteward,
       evaluated: pullRequests.length,
       agentTriaged: this.agentTriaged,
       results,

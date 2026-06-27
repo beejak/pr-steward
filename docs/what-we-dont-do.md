@@ -38,4 +38,4 @@ Closing a stale Dependabot PR only removes it from the open-PR queue — it does
 Current rollout: **`bot-only`**.
 
 ---
-_Context: 2026-06-27T05:07:29.748Z_
+_Context: 2026-06-27T05:41:48.266Z_

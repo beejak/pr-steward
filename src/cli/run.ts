@@ -2,7 +2,9 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import { loadPolicy } from "../policy/load.js";
+import { validatePolicyHardening } from "../policy/validate.js";
 import { LifecycleRunner } from "../runner/lifecycle.js";
+import { formatRuleStatsMarkdown } from "../runner/metrics.js";
 import { GitHubClient } from "../platform/github/client.js";
 
 function parseRepo(): { owner: string; repo: string } {
@@ -53,6 +55,12 @@ async function main(): Promise<void> {
   }
 
   const policy = loadPolicy();
+  for (const issue of validatePolicyHardening(policy)) {
+    if (issue.level === "warning") {
+      console.warn(`Policy warning: ${issue.message}`);
+    }
+  }
+
   const { owner, repo } = parseRepo();
   const repository = process.env.PR_STEWARD_TARGET_REPO ?? process.env.GITHUB_REPOSITORY ?? `${owner}/${repo}`;
   const client = new GitHubClient({ owner, repo, token });
@@ -78,12 +86,18 @@ async function main(): Promise<void> {
   const summaryLines = [
     `### pr-steward run (mode: ${summary.mode})`,
     "",
-    `- Repository: ${repository}`,
-    `- Triage provider: ${process.env.PR_STEWARD_TRIAGE_PROVIDER ?? "auto"}`,
+    `- Repository: ${summary.runMetadata.repository}`,
+    `- Triage provider: ${summary.runMetadata.triageProvider}`,
+    `- Timestamp: ${summary.runMetadata.timestamp}`,
     `- Evaluated: ${summary.evaluated}`,
     `- Agent triaged: ${summary.agentTriaged}`,
     `- Would close/warn: ${actionable.length}`,
     `- Applied: ${summary.closuresApplied} closes, ${summary.warningsApplied} warns`,
+    `- Reopened after steward: ${summary.reopenedAfterSteward.length}`,
+    "",
+    "#### Rule stats",
+    "",
+    formatRuleStatsMarkdown(summary.ruleStats),
     "",
   ];
 
